@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trade & Craft | 경제 무역 게임</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+body{font-family:Pretendard,system-ui,sans-serif}button:disabled{opacity:.4;cursor:not-allowed}
+.panel{background:#1e293b;border:1px solid #334155;border-radius:1rem;padding:1.15rem}
+.resource{background:#0f172a;border:1px solid #334155;border-radius:.8rem;padding:.8rem}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+<header class="bg-slate-800 border-b border-slate-700 px-4 md:px-6 py-4 flex flex-wrap justify-between gap-3 items-center">
+ <div class="flex gap-3 items-center"><div class="bg-amber-500 text-slate-900 p-3 rounded-xl"><i class="fa-solid fa-scale-balanced"></i></div><div><h1 class="font-extrabold text-xl">Trade & Craft : 경제 무역 게임</h1><p class="text-xs text-slate-400">자원 희소성 · 무역 · 가공품 제작</p></div></div>
+ <div class="flex gap-2 items-center"><label for="mode" class="text-sm">화면 모드</label><select id="mode" class="bg-slate-700 border border-slate-600 rounded-lg p-2"><option value="teacher">선생님 콘솔</option><option value="1">1모둠</option><option value="2">2모둠</option><option value="3">3모둠</option><option value="4">4모둠</option><option value="5">5모둠</option><option value="6">6모둠</option></select></div>
+</header>
+<main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-5">
+ <aside class="space-y-5">
+  <section class="panel text-center"><span class="text-xs text-amber-300">라운드 타이머</span><div id="timer" class="text-5xl font-black my-3">01:00</div><div id="timerControls" class="flex gap-2 justify-center"><button id="timerToggle" class="bg-emerald-600 px-4 py-2 rounded-lg font-bold">시작</button><button id="timerReset" class="bg-rose-600 px-4 py-2 rounded-lg font-bold">리셋</button></div></section>
+  <section class="panel"><h2 class="font-bold mb-3"><i class="fa-solid fa-chart-line text-amber-400 mr-2"></i>전체 자원 희소성</h2><div id="scarcity" class="space-y-2 text-sm"></div></section>
+  <section class="panel"><h2 class="font-bold mb-3"><i class="fa-solid fa-book text-blue-400 mr-2"></i>가공품 조합 공식</h2><div id="recipes" class="space-y-2 text-xs"></div></section>
+ </aside>
+ <section class="lg:col-span-2 space-y-5">
+  <div id="teacherView" class="panel hidden"><div class="flex justify-between items-center gap-3 mb-4"><h2 class="text-xl font-extrabold text-amber-300">선생님 마스터 콘솔</h2><button id="refresh" class="bg-slate-700 px-3 py-2 rounded-lg"><i class="fa-solid fa-rotate"></i> 새로고침</button></div><div id="groups" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div><div class="mt-5 border-t border-slate-700 pt-4"><h3 class="font-bold mb-2">최근 거래 내역</h3><div id="history" class="space-y-2 text-sm"></div><button id="resetGame" class="mt-4 bg-rose-700 px-4 py-2 rounded-lg font-bold">전체 게임 초기화</button></div></div>
+  <div id="groupView" class="space-y-5">
+   <section class="panel"><div class="flex flex-wrap justify-between gap-3 items-center mb-4"><h2 id="groupTitle" class="text-xl font-extrabold text-amber-300">1모둠 대시보드</h2><div class="bg-slate-900 px-4 py-2 rounded-lg">보유 재화: <strong id="coins" class="text-amber-300">10 코인</strong></div></div><div id="resources" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5"></div><div class="grid grid-cols-2 gap-3 border-t border-slate-700 pt-4"><button id="buyOpen" class="bg-blue-600 p-3 rounded-xl font-bold"><i class="fa-solid fa-store mr-1"></i> 은행에서 구매</button><button id="sellOpen" class="bg-emerald-600 p-3 rounded-xl font-bold"><i class="fa-solid fa-coins mr-1"></i> 은행에 판매</button></div></section>
+   <section class="panel"><h3 class="font-bold mb-3"><i class="fa-solid fa-hammer text-purple-400 mr-2"></i>가공품 제작소</h3><div id="craftables" class="grid sm:grid-cols-2 gap-3"></div></section>
+   <section class="panel"><h3 class="font-bold mb-3"><i class="fa-solid fa-handshake text-emerald-400 mr-2"></i>무역 제안 보내기</h3><form id="proposalForm" class="space-y-3"><div class="grid sm:grid-cols-2 gap-3"><label class="text-xs text-slate-400">상대 모둠<select id="target" class="block w-full mt-1 bg-slate-700 p-2 rounded-lg"></select></label><label class="text-xs text-slate-400">제안 메시지<input id="message" required maxlength="200" placeholder="예: 목재가 필요합니다." class="block w-full mt-1 bg-slate-700 p-2 rounded-lg"></label><label class="text-xs text-slate-400">내가 줄 자원/코인<input id="offer" required maxlength="100" placeholder="예: 석유 1개" class="block w-full mt-1 bg-slate-700 p-2 rounded-lg"></label><label class="text-xs text-slate-400">받고 싶은 자원/코인<input id="want" required maxlength="100" placeholder="예: 목재 2개" class="block w-full mt-1 bg-slate-700 p-2 rounded-lg"></label></div><button class="w-full bg-amber-500 text-slate-900 p-3 rounded-lg font-extrabold">무역 제안서 발송</button></form></section>
+   <section class="panel"><h3 class="font-bold mb-3">받은 무역 제안</h3><div id="inbox" class="space-y-3 text-sm"></div><h3 class="font-bold mt-5 mb-3">보낸 무역 제안</h3><div id="outbox" class="space-y-2 text-sm"></div></section>
+  </div>
+ </section>
+</main>
+<div id="bankModal" class="hidden fixed inset-0 bg-black/70 z-50 items-center justify-center p-4"><div class="panel w-full max-w-lg"><div class="flex justify-between items-center mb-4"><h3 id="bankTitle" class="font-extrabold text-lg">중앙 은행</h3><button id="bankClose" class="text-slate-300 text-xl">&times;</button></div><div id="bankBody" class="space-y-2"></div></div></div>
+<div id="teacherPinModal" class="hidden fixed inset-0 bg-black/80 z-[60] items-center justify-center p-4"><form id="pinForm" class="panel w-full max-w-sm"><h3 class="font-extrabold text-lg mb-2">교사 인증</h3><p class="text-sm text-slate-400 mb-3">교사 기능을 사용하려면 인증 번호를 입력하세요.</p><input id="pin" type="password" inputmode="numeric" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 mb-3" placeholder="교사 인증 번호"><button class="w-full bg-amber-500 text-slate-900 rounded-lg p-3 font-bold">확인</button></form></div>
+<div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden bg-slate-100 text-slate-900 px-5 py-3 rounded-xl shadow-xl z-[70]"></div>
+<script>
+const RES={wood:{name:'목재',icon:'fa-tree',color:'text-amber-500'},iron:{name:'철광석',icon:'fa-cubes',color:'text-slate-300'},oil:{name:'석유',icon:'fa-oil-well',color:'text-yellow-400'},cotton:{name:'면화',icon:'fa-seedling',color:'text-emerald-400'},food:{name:'식량',icon:'fa-wheat-awn',color:'text-orange-400'},gold:{name:'금',icon:'fa-coins',color:'text-amber-300'}};
+const RECIPES=[
+{id:'r1',name:'건물 건설 세트',req:{wood:2,iron:1},score:30,roi:'150%'},
+{id:'r2',name:'의류 키트',req:{cotton:2,food:1},score:30,roi:'140%'},
+{id:'r3',name:'에너지 연료통',req:{oil:2,iron:1},score:40,roi:'160%'},
+{id:'r4',name:'스마트 하이테크 기기',req:{iron:2,gold:1,oil:1},score:80,roi:'200%'},
+{id:'r5',name:'고급 패션 브랜드',req:{cotton:2,gold:1,food:1},score:80,roi:'190%'},
+{id:'r6',name:'우주선 / 첨단 도시',req:{iron:2,gold:1,oil:1,wood:1},score:160,roi:'250%'}];
+let state=null, mode='1', timerTick=null, seconds=60, teacherAuthed=false, teacherPin='', bankType='buy';
+const $=id=>document.getElementById(id);
+function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2800)}
+async function api(path,body){const r=await fetch('/api/'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({error:'서버 응답을 읽을 수 없습니다.'}));if(!r.ok)throw new Error(j.error||'요청 처리에 실패했습니다.');return j}
+async function load(){try{state=await api('state');seconds=state.game.timer_seconds;render();}catch(e){toast(e.message)}}
+function recipeReq(r){return Object.entries(r.req).map(([k,v])=>`${RES[k].name} ${v}`).join(' · ')}
+function render(){if(!state)return;$('timer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');let counts=Object.fromEntries(Object.keys(RES).map(k=>[k,0]));state.groups.forEach(g=>Object.keys(RES).forEach(k=>counts[k]+=g.resources[k]||0));
+$('scarcity').innerHTML=Object.keys(RES).map(k=>{let n=counts[k],tag=n<=4?'고희소 🔥':n<=10?'보통 ⚖️':'풍부 🌿',c=n<=4?'text-rose-400':n<=10?'text-amber-300':'text-emerald-300';return `<div class="flex justify-between bg-slate-900/60 p-2 rounded-lg"><span><i class="fa-solid ${RES[k].icon} ${RES[k].color} mr-2"></i>${RES[k].name} (${n}개)</span><b class="${c}">${tag}</b></div>`}).join('');
+$('recipes').innerHTML=RECIPES.map(r=>`<div class="bg-slate-900/60 p-2 rounded-lg flex justify-between gap-2"><div><b>${r.name}</b><div class="text-slate-400">${recipeReq(r)}</div></div><div class="text-right whitespace-nowrap"><b class="text-amber-300">${r.score}점</b><div class="text-emerald-300">ROI ${r.roi}</div></div></div>`).join('');
+$('teacherView').classList.toggle('hidden',mode!=='teacher');$('groupView').classList.toggle('hidden',mode==='teacher');$('timerControls').classList.toggle('hidden',mode!=='teacher');
+$('groups').innerHTML=state.groups.map(g=>`<div class="bg-slate-900 p-4 rounded-xl border border-slate-700"><div class="flex justify-between"><b class="text-amber-300">${g.group_no}모둠</b><b>${g.coins} 코인</b></div><p class="text-sm mt-2">제작 점수: <b class="text-emerald-300">${g.score}점</b></p><p class="text-xs text-slate-400 mt-1">${Object.keys(RES).map(k=>`${RES[k].name} ${g.resources[k]||0}`).join(' · ')}</p><p class="text-xs mt-2">제작: ${g.crafted_names||'없음'}</p></div>`).join('');
+$('history').innerHTML=state.history.length?state.history.map(h=>`<div class="bg-slate-900/60 p-2 rounded-lg"><b>${esc(h.title)}</b><div class="text-xs text-slate-400">${new Date(h.created_at).toLocaleString('ko-KR')} · ${esc(h.detail||'')}</div></div>`).join(''):'<p class="text-slate-400">아직 거래 내역이 없습니다.</p>';
+if(mode!=='teacher'){let g=state.groups.find(x=>x.group_no===Number(mode));if(!g)return;$('groupTitle').textContent=mode+'모둠 대시보드';$('coins').textContent=g.coins+' 코인';$('resources').innerHTML=Object.keys(RES).map(k=>`<div class="resource flex justify-between items-center"><span><i class="fa-solid ${RES[k].icon} ${RES[k].color} mr-2"></i>${RES[k].name}</span><b>${g.resources[k]||0}개</b></div>`).join('');
+$('craftables').innerHTML=RECIPES.map(r=>{let can=Object.entries(r.req).every(([k,v])=>(g.resources[k]||0)>=v),done=g.crafted_ids.includes(r.id);return `<div class="bg-slate-900 border border-slate-700 rounded-xl p-4"><div class="flex justify-between gap-2"><b>${r.name}</b><b class="text-amber-300">+${r.score}점</b></div><p class="text-xs text-slate-400 my-2">${recipeReq(r)}</p><button ${!can||done?'disabled':''} data-craft="${r.id}" class="w-full ${done?'bg-emerald-900': 'bg-purple-600'} p-2 rounded-lg text-sm font-bold">${done?'제작 완료':can?'조합하기':'재료 부족'}</button></div>`}).join('');
+$('target').innerHTML=state.groups.filter(x=>x.group_no!==Number(mode)).map(x=>`<option value="${x.group_no}">${x.group_no}모둠</option>`).join('');
+$('inbox').innerHTML=state.proposals.filter(p=>p.to_group===Number(mode)&&p.status==='pending').map(p=>`<div class="bg-slate-900 p-3 rounded-xl"><b>${p.from_group}모둠의 제안</b><p class="my-1">${esc(p.message)}</p><p class="text-amber-300">주는 것: ${esc(p.offer)}</p><p class="text-sky-300">받을 것: ${esc(p.want)}</p><div class="flex gap-2 mt-3"><button data-proposal="${p.id}" data-answer="accept" class="bg-emerald-600 px-3 py-2 rounded-lg">수락</button><button data-proposal="${p.id}" data-answer="reject" class="bg-rose-700 px-3 py-2 rounded-lg">거절</button></div></div>`).join('')||'<p class="text-slate-400">받은 제안이 없습니다.</p>';
+$('outbox').innerHTML=state.proposals.filter(p=>p.from_group===Number(mode)).slice(0,10).map(p=>`<div class="bg-slate-900/60 p-2 rounded-lg">${p.to_group}모둠 · ${esc(p.message)} <span class="text-amber-300">(${statusKo(p.status)})</span></div>`).join('')||'<p class="text-slate-400">보낸 제안이 없습니다.</p>';
+}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function statusKo(s){return ({pending:'대기 중',accepted:'수락',rejected:'거절'})[s]||s}
+async function action(name,data={}){try{const payload={action:name,group_no:mode==='teacher'?null:Number(mode),...data};if(['timer-toggle','timer-reset','reset'].includes(name))payload.pin=teacherPin;await api('action',payload);await load();toast('반영했습니다.')}catch(e){toast(e.message)}}
+$('mode').addEventListener('change',async e=>{let next=e.target.value;if(next==='teacher'&&!teacherAuthed){$('teacherPinModal').classList.remove('hidden');$('teacherPinModal').classList.add('flex');return}mode=next;render();});
+$('pinForm').addEventListener('submit',async e=>{e.preventDefault();try{await api('teacher-auth',{pin:$('pin').value});teacherAuthed=true;teacherPin=$('pin').value;$('teacherPinModal').classList.add('hidden');$('teacherPinModal').classList.remove('flex');mode='teacher';$('mode').value='teacher';$('pin').value='';render()}catch(err){toast(err.message)}});
+$('refresh').onclick=load;
+$('proposalForm').onsubmit=async e=>{e.preventDefault();await action('proposal',{to_group:Number($('target').value),message:$('message').value,offer:$('offer').value,want:$('want').value});e.target.reset()};
+$('buyOpen').onclick=()=>openBank('buy');$('sellOpen').onclick=()=>openBank('sell');$('bankClose').onclick=()=>{$('bankModal').classList.add('hidden');$('bankModal').classList.remove('flex')};
+function openBank(type){bankType=type;$('bankTitle').textContent=type==='buy'?'은행 자원 구매 · 개당 3코인':'은행 자원 판매 · 개당 2코인';$('bankBody').innerHTML=Object.keys(RES).map(k=>`<div class="flex justify-between items-center bg-slate-900 p-3 rounded-lg"><span><i class="fa-solid ${RES[k].icon} ${RES[k].color} mr-2"></i>${RES[k].name}</span><button data-bank="${k}" class="${type==='buy'?'bg-blue-600':'bg-emerald-600'} px-3 py-2 rounded-lg text-sm font-bold">${type==='buy'?'3코인으로 구매':'2코인에 판매'}</button></div>`).join('');$('bankModal').classList.remove('hidden');$('bankModal').classList.add('flex')}
+document.addEventListener('click',e=>{let c=e.target.closest('[data-craft]');if(c)action('craft',{recipe_id:c.dataset.craft});let b=e.target.closest('[data-bank]');if(b)action(bankType==='buy'?'bank-buy':'bank-sell',{resource:b.dataset.bank});let p=e.target.closest('[data-proposal]');if(p)action('proposal-respond',{proposal_id:p.dataset.proposal,answer:p.dataset.answer})});
+$('timerToggle').onclick=()=>action('timer-toggle');$('timerReset').onclick=()=>action('timer-reset');
+$('resetGame').onclick=async()=>{if(!confirm('모든 모둠의 코인·자원·제작·제안 기록을 초기화할까요?'))return;const pin=prompt('교사 인증 번호를 다시 입력하세요.');if(pin===null)return;try{await api('teacher-auth',{pin});teacherPin=pin;await api('action',{action:'reset',pin});await load();toast('게임을 초기화했습니다.')}catch(e){toast(e.message)}};
+load();setInterval(load,4000);
+</script>
+</body></html>
